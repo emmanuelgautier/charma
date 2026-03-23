@@ -1,0 +1,199 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: charma
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: charma
+    main: ./cmd/charma
+    binary: charma
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - "386"
+    ignore:
+      - goos: darwin
+        goarch: "386"
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - id: charma
+    builds: [charma]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+signs:
+  - cmd: cosign
+    args:
+      - "sign-blob"
+      - "--output-certificate=${certificate}"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - "--yes"
+    artifacts: checksum
+    output: true
+
+docker_signs:
+  - cmd: cosign
+    args:
+      - "sign"
+      - "${artifact}"
+      - "--yes"
+    artifacts: all
+
+dockers:
+  - id: charma-amd64
+    ids: [charma]
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - "ghcr.io/emmanuelgautier/charma:{{ .Tag }}-amd64"
+      - "ghcr.io/emmanuelgautier/charma:v{{ .Major }}-amd64"
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description=Converts text to styled ASCII art"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source=https://github.com/emmanuelgautier/charma"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+
+  - id: charma-arm64
+    ids: [charma]
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - "ghcr.io/emmanuelgautier/charma:{{ .Tag }}-arm64"
+      - "ghcr.io/emmanuelgautier/charma:v{{ .Major }}-arm64"
+    use: buildx
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description=Converts text to styled ASCII art"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.source=https://github.com/emmanuelgautier/charma"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+
+docker_manifests:
+  - name_template: "ghcr.io/emmanuelgautier/charma:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/emmanuelgautier/charma:{{ .Tag }}-amd64"
+      - "ghcr.io/emmanuelgautier/charma:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/emmanuelgautier/charma:v{{ .Major }}"
+    image_templates:
+      - "ghcr.io/emmanuelgautier/charma:v{{ .Major }}-amd64"
+      - "ghcr.io/emmanuelgautier/charma:v{{ .Major }}-arm64"
+  - name_template: "ghcr.io/emmanuelgautier/charma:latest"
+    image_templates:
+      - "ghcr.io/emmanuelgautier/charma:{{ .Tag }}-amd64"
+      - "ghcr.io/emmanuelgautier/charma:{{ .Tag }}-arm64"
+
+brews:
+  - name: charma
+    ids: [charma]
+    repository:
+      owner: emmanuelgautier
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: "https://github.com/emmanuelgautier/charma"
+    description: "Converts text to styled ASCII art with borders, colors, and multiple output formats"
+    license: "MIT"
+    install: |
+      bin.install "charma"
+    test: |
+      system "#{bin}/charma", "--version"
+
+snapcrafts:
+  - name: charma
+    ids: [charma]
+    summary: "ASCII art generator CLI"
+    description: |
+      charma converts text to styled ASCII art. It supports multiple FIGlet fonts,
+      Unicode box borders, ANSI colors and gradients, and output formats including
+      terminal, txt, png, and svg.
+    grade: stable
+    confinement: strict
+    publish: true
+    license: MIT
+    apps:
+      charma:
+        command: charma
+        plugs:
+          - home
+
+chocolateys:
+  - name: charma
+    ids: [charma]
+    owners: emmanuelgautier
+    title: charma
+    authors: emmanuelgautier
+    project_url: "https://github.com/emmanuelgautier/charma"
+    license_url: "https://github.com/emmanuelgautier/charma/blob/main/LICENSE"
+    require_license_acceptance: false
+    project_source_url: "https://github.com/emmanuelgautier/charma"
+    docs_url: "https://github.com/emmanuelgautier/charma/blob/main/README.md"
+    bug_tracker_url: "https://github.com/emmanuelgautier/charma/issues"
+    summary: "ASCII art generator CLI tool"
+    description: |
+      charma converts text to styled ASCII art. It supports multiple FIGlet fonts,
+      Unicode box borders, ANSI colors and gradients, and output formats including
+      terminal, txt, png, and svg.
+    tags: "ascii art cli terminal"
+    icon_url: "https://raw.githubusercontent.com/emmanuelgautier/charma/main/assets/icon.png"
+    copyright: "2024 Emmanuel Gautier"
+    api_key: "{{ .Env.CHOCOLATEY_API_KEY }}"
+    source_repo: "https://push.chocolatey.org/"
+    skip_publish: false
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "Merge pull request"
+      - "Merge branch"
+
+release:
+  github:
+    owner: emmanuelgautier
+    name: charma
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
+
+snapshot:
+  name_template: "{{ .Tag }}-next"

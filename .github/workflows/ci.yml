@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      checks: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ inputs.go-version }}
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v9
+
+      - name: Build
+        shell: bash
+        run: go build -v ./...
+
+      - name: Test
+        shell: bash
+        run: go test -coverprofile=coverage.out -covermode=atomic ./...
