@@ -1,8 +1,5 @@
 package renderer
 
-// emojiHeight is the number of rows in every emoji glyph definition.
-const emojiHeight = 5
-
 // emojiGlyphs maps an emoji base codepoint to a fixed emojiHeight-row ASCII art glyph.
 var emojiGlyphs = map[rune][]string{
 	// ── Faces ──────────────────────────────────────────────────────────────

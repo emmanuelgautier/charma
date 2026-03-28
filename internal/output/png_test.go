@@ -1,7 +1,6 @@
 package output_test
 
 import (
-	"image"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -21,7 +20,7 @@ func TestWritePNG_Basic(t *testing.T) {
 	// Verify it's a valid PNG.
 	f, err := os.Open(path)
 	require.NoError(t, err)
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 
 	img, err := png.Decode(f)
 	require.NoError(t, err)
@@ -38,7 +37,7 @@ func TestWritePNG_MultiLine(t *testing.T) {
 
 	f, err := os.Open(path)
 	require.NoError(t, err)
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 
 	img, err := png.Decode(f)
 	require.NoError(t, err)
@@ -61,7 +60,7 @@ func TestWritePNG_HexColors(t *testing.T) {
 
 	f, err := os.Open(path)
 	require.NoError(t, err)
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 	_, err = png.Decode(f)
 	require.NoError(t, err)
 }
@@ -78,10 +77,10 @@ func TestWritePNG_EmptyLines(t *testing.T) {
 
 	f, err := os.Open(path)
 	require.NoError(t, err)
-	defer f.Close()
+	defer f.Close() //nolint:errcheck
 
 	cfg, err := png.Decode(f)
 	require.NoError(t, err)
 	// Should produce a 1×1 (minimum) image.
-	assert.GreaterOrEqual(t, cfg.(image.Image).Bounds().Dx(), 1)
+	assert.GreaterOrEqual(t, cfg.Bounds().Dx(), 1)
 }

@@ -32,7 +32,7 @@ func WritePNG(path string, lines []string, bgColorName, fgColorName string, meta
 	if err != nil {
 		return fmt.Errorf("loading font: %w", err)
 	}
-	defer face.Close()
+	defer face.Close() //nolint:errcheck
 
 	metrics := face.Metrics()
 	lineHeight := (metrics.Ascent + metrics.Descent).Ceil()

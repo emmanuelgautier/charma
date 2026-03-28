@@ -61,10 +61,10 @@ func WriteSVG(path string, lines []string, bgColor, fgColor string, meta Metadat
 	for i, line := range plainLines {
 		x := svgPadding
 		y := svgPadding + (i+1)*svgLineHeight
-		textLines.WriteString(fmt.Sprintf(
+		fmt.Fprintf(&textLines,
 			"  <text x=%q y=%q fill=%q class=\"mono\" xml:space=\"preserve\">%s</text>\n",
 			fmt.Sprint(x), fmt.Sprint(y), fgColor, xmlEscape(line),
-		))
+		)
 	}
 
 	xmlComment := ""
