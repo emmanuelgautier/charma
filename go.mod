@@ -4,7 +4,7 @@ go 1.26
 
 require (
 	github.com/box-cli-maker/box-cli-maker/v3 v3.0.0
-	github.com/charmbracelet/lipgloss v1.1.0
+	github.com/charmbracelet/lipgloss/v2 v2.0.3
 	github.com/mark3labs/mcp-go v0.49.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
