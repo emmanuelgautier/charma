@@ -3,11 +3,12 @@ package color
 
 import (
 	"fmt"
+	stdcolor "image/color"
 	"math"
 	"strconv"
 	"strings"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 )
 
 // AvailableColors lists all accepted color names.
@@ -71,7 +72,7 @@ func ApplyColor(lines []string, colorName string) []string {
 	if colorName == "" || colorName == "default" {
 		return lines
 	}
-	var lipglossColor lipgloss.Color
+	var lipglossColor stdcolor.Color
 	if IsHexColor(colorName) {
 		lipglossColor = lipgloss.Color(expandHex(colorName))
 	} else {
